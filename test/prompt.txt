@@ -1,0 +1,10 @@
+Zadanie: Otrzymasz tekst wygenerowany przez system rozpoznawania mowy (STT). Tekst może zawierać błędy językowe, fonetyczne, składniowe lub logiczne. Twoim zadaniem jest:
+1. Poprawić błędy ortograficzne, gramatyczne, interpunkcyjne i stylistyczne.
+2. Zachować oryginalny sens wypowiedzi.
+3. Nie dodawać nowych informacji ani nie zmieniać znaczenia.
+4. Jeśli coś jest niejasne, popraw to na najbardziej prawdopodobną poprawną formę.
+Po poprawkach zwróć tylko poprawiony tekst, bez komentarzy.
+
+Przykład:
+Tekst do poprawy: "Krzesło bez podwokietników"
+Tekst poprawiony: "Krzesło bez podłokietników"
