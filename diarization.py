@@ -24,6 +24,14 @@ def main():
     hf_token = "xxxxxxxxxxxxxxxx"
     pipeline = Pipeline.from_pretrained("pyannote/speaker-diarization-3.1", token=hf_token)
 
+    # parametry pyannote
+    pipeline.segmentation.threshold = 0.99
+    pipeline.clustering.threshold  = 0.99
+    pipeline.segmentation.min_duration_on  = 0
+    pipeline.segmentation.min_duration_off = 0
+
+
+
     audio = AudioSegment.from_wav(audio_path)
 
     ann = pipeline(audio_path, num_speakers=num_speakers)
