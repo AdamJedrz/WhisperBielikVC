@@ -1,41 +1,25 @@
-import sys
 import os
 from pyannote.audio import Pipeline
 from pydub import AudioSegment
 
-def main():
-    if len(sys.argv) < 4 or len(sys.argv) > 5:
-        print("Użycie:")
-        print("python diarization.py <ścieżka_do_audio> <ścieżka_do_output_speakerów> <ścieżka_do_output_speechy> [liczba_mówców]")
-        sys.exit(1)
 
-    audio_path = sys.argv[1]
-    output_speakers_dir = sys.argv[2]
-    output_speech_dir = sys.argv[3]
-    num_speakers = int(sys.argv[4]) if len(sys.argv) == 5 else None
-
-    if not os.path.isfile(audio_path):
-        print(f"Plik audio nie istnieje: {audio_path}")
-        sys.exit(1)
-
+def run_diarization(
+    audio_path: str,
+    output_speakers_dir: str,
+    output_speech_dir: str
+):
     os.makedirs(output_speakers_dir, exist_ok=True)
     os.makedirs(output_speech_dir, exist_ok=True)
 
-    hf_token = "xxxxxxxxxxxxxxxx"
-    pipeline = Pipeline.from_pretrained("pyannote/speaker-diarization-3.1", token=hf_token)
+    pipeline = Pipeline.from_pretrained("pyannote/speaker-diarization-3.1")
 
-    # parametry pyannote
-    pipeline.segmentation.threshold = 0.99
-    pipeline.clustering.threshold  = 0.99
-    pipeline.segmentation.min_duration_on  = 0
+    pipeline.segmentation.threshold = 0.5
+    pipeline.clustering.threshold = 0.5
+    pipeline.segmentation.min_duration_on = 0
     pipeline.segmentation.min_duration_off = 0
 
-
-
     audio = AudioSegment.from_wav(audio_path)
-
-    ann = pipeline(audio_path, num_speakers=num_speakers)
-
+    ann = pipeline(audio_path, num_speakers=2) #dobrac do potrzeb
     annotation = getattr(ann, "speaker_diarization", ann)
 
     segments = []
@@ -46,28 +30,44 @@ def main():
             "end": float(segment.end)
         })
 
-    segments = sorted(segments, key=lambda x: x["start"])
+    segments.sort(key=lambda x: x["start"])
 
-    ordered = []
+    speaker_map = {}
+    speaker_counter = 1
+
+    ordered_segments = []
+
     for i, s in enumerate(segments, start=1):
+        if s["speaker"] not in speaker_map:
+            speaker_map[s["speaker"]] = speaker_counter
+            speaker_counter += 1
+
+        spk_id = speaker_map[s["speaker"]]
+
         start_ms = int(s["start"] * 1000)
-        end_ms   = int(s["end"] * 1000)
+        end_ms = int(s["end"] * 1000)
 
         snippet = audio[start_ms:end_ms]
-        fname = os.path.join(output_speech_dir, f"speech_{i}_spk{s['speaker']}.wav")
-        snippet.export(fname, format="wav")
 
-        ordered.append((s["speaker"], snippet))
+        fname = f"speech{i}_speaker{spk_id}.wav"
+        snippet.export(
+            os.path.join(output_speech_dir, fname),
+            format="wav"
+        )
 
-    speaker_audio = {}
-    for spk, snip in ordered:
-        if spk not in speaker_audio:
-            speaker_audio[spk] = AudioSegment.silent(duration=0)
-        speaker_audio[spk] += snip
+        ordered_segments.append((spk_id, snippet))
 
-    for spk, wav in speaker_audio.items():
-        out_file = os.path.join(output_speakers_dir, f"speaker_{spk}.wav")
-        wav.export(out_file, format="wav")
+    speaker_segments = {}
 
-if __name__ == "__main__":
-    main()
+    for spk_id, snip in ordered_segments:
+        speaker_segments.setdefault(spk_id, [])
+        speaker_segments[spk_id].append(snip)
+
+    for spk_id, snippets in speaker_segments.items():
+        best_snippet = max(snippets, key=lambda x: len(x))
+
+        out_file = os.path.join(
+            output_speakers_dir,
+            f"speaker{spk_id}.wav"
+        )
+        best_snippet.export(out_file, format="wav")
