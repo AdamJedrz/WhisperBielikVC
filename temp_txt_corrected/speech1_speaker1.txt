@@ -1,1 +1,5 @@
-przykładowa pierwsza wypowiedź mówiona przez pierwszego mówcę 
+Tekst poprawiony: "You." (Jeśli kontekst pozwala, można dodać przecinek: "You,")
+
+Lub, w zależności od kontekstu, można rozwinąć do pełnego zdania, np.: "You are here." (Jesteś tutaj.)
+
+Jednak zgodnie z instrukcją, nie dodajemy nowych informacji, więc najlepiej pozostawić jako: "You." (z przecinkiem, jeśli to część wypowiedzi).

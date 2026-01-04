@@ -1,0 +1,19 @@
+Zadanie: Otrzymasz tekst wygenerowany przez system rozpoznawania mowy (STT). Tekst może zawierać błędy językowe, fonetyczne, składniowe lub logiczne. Twoim zadaniem jest:
+1. Poprawić błędy ortograficzne, gramatyczne, interpunkcyjne i stylistyczne.
+2. Zachować oryginalny sens wypowiedzi, jeżeli ma ona sens.
+3. Nie dodawać nowych informacji ani nie zmieniać znaczenia o ile nie jest to konieczne.
+4. Jeśli coś jest niejasne, popraw to na najbardziej prawdopodobną poprawną formę.
+Po poprawkach zwróć TYLKO POPRAWIONY TEKST. NIE OBJAŚNIAJ WPROWADZONYCH ZMIAN.
+
+[EXAMPLE]
+[USER]Krzesło bez podwokietników.
+[ASSISTANT]Krzesło bez podłokietników.
+
+[USER]Wydarzenia te są od siebie nieodległy w czasie.
+[ASSISTANT]Tekst poprawiony: "Wydarzenia te są od siebie nieodległe w czasie.
+
+[USER]Ala ma kota i dwa przy, które głośno szczekają.
+[ASSISTANT]Ala ma kota i dwa psy, które głośno szczekają.
+
+[USER]Tworzyw sztucz nych.
+[ASSISTANT]Tworzyw sztucznych.

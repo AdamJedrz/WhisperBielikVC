@@ -1,20 +1,26 @@
 import os
 import re
+import torch
 from pydub import AudioSegment
 
 from diarization import run_diarization
 from generate_audio import generate_audio
+from transcription import load_stt_model, transcribe_audio
+from commit_big_think import load_llm, big_think
 
+PROMPT = "prompt.txt"
 
 TEMP_AUDIO = "temp_audio"
 TEMP_SPEAKER = "temp_speaker"
 TEMP_SPEECH = "temp_speech"
 TEMP_TXT = "temp_txt_corrected"
+TEMP_RAW = "temp_txt_raw"
 TEMP_AUDIO_CORRECTED = "temp_audio_corrected"
 
-INPUT_AUDIO = os.path.join(TEMP_AUDIO, "audio.wav")
-RESULT_AUDIO = os.path.join(TEMP_AUDIO, "result.wav")
-
+# INPUT_AUDIO = os.path.join(TEMP_AUDIO, "audio.wav")
+# RESULT_AUDIO = os.path.join(TEMP_AUDIO, "result.wav")
+INPUT_AUDIO = os.path.join(TEMP_AUDIO, "chair_sawtooth_chirp_1.wav")
+RESULT_AUDIO = os.path.join(TEMP_AUDIO, "out.wav")
 
 def extract_speaker_id(filename: str) -> int:
     match = re.search(r"speaker(\d+)", filename)
@@ -32,11 +38,39 @@ def main():
         output_speech_dir=TEMP_SPEECH
     )
 
+    #whisper STT
+    stt_model, processor = load_stt_model()
+    for audio_filename in os.listdir(TEMP_SPEECH):
+        transcript_text = transcribe_audio(stt_model, processor, "pl", os.path.join(TEMP_SPEECH, audio_filename))
+        transcript_filename = os.path.join(TEMP_RAW, audio_filename.split('.')[0]+".txt")
 
+        mode = 'x'
+        if os.path.exists(transcript_filename):
+            mode = 'w'
 
+        transcript_file = open(transcript_filename, mode)
+        transcript_file.write(transcript_text)
+        transcript_file.close()
 
+    del stt_model
+    torch.cuda.empty_cache()
 
+    #Bielik
+    llm, tokenizer = load_llm()
+    for raw_text_filename in os.listdir(TEMP_RAW):
+        raw_text_file = open(os.path.join(TEMP_RAW, raw_text_filename), "r")
+        raw_text = raw_text_file.read()
+        raw_text_file.close()
+        refined_text = big_think(llm, tokenizer, PROMPT, raw_text, 0.7)
 
+        refined_text_filename = os.path.join(TEMP_TXT, raw_text_filename)
+        mode = 'x'
+        if os.path.exists(refined_text_filename):
+            mode = 'w'
+
+        refined_text_file = open(refined_text_filename, mode)
+        refined_text_file.write(refined_text)
+        refined_text_file.close()
 
 
     #generowanie wypowiedzi z obrobionego tekstu 

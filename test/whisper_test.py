@@ -7,25 +7,32 @@ torch_dtype = torch.float16 if torch.cuda.is_available() else torch.float32
 model_id = "openai/whisper-large-v3"
 
 model = AutoModelForSpeechSeq2Seq.from_pretrained(
-    model_id, dtype=torch_dtype, low_cpu_mem_usage=True, use_safetensors=True
+    model_id, low_cpu_mem_usage=True, use_safetensors=True
 )
-model.to(device)
 
 processor = AutoProcessor.from_pretrained(model_id)
+
+# model.generation_config = model.generation_config.from_model_config(
+#     model.config
+# )
+# model.generation_config.return_timestamps = False
+
+model.to(device, dtype=torch_dtype)
 
 pipe = pipeline(
     "automatic-speech-recognition",
     model=model,
     tokenizer=processor.tokenizer,
     feature_extractor=processor.feature_extractor,
-    dtype=torch_dtype,
-    device=device, 
-    language="pl",
+    device=device,
     return_timestamps=True
 )
 
-# dataset = load_dataset("distil-whisper/librispeech_long", "clean", split="validation")
-# sample = dataset[0]["audio"]
-
-result = pipe('krzesło_sawtooth_chirp_1.mp3')
+result = pipe(
+    "chair_sawtooth_chirp_1.mp3",
+    generate_kwargs={
+        "language": "pl",
+        "task": "transcribe"
+    },
+)
 print(result["text"])
