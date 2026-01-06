@@ -8,7 +8,7 @@ from generate_audio import generate_audio
 from transcription import load_stt_model, transcribe_audio
 from commit_big_think import load_llm, big_think
 
-PROMPT = "prompt.txt"
+PROMPT = "prompt_dialog.txt"
 
 TEMP_AUDIO = "temp_audio"
 TEMP_SPEAKER = "temp_speaker"
@@ -57,20 +57,62 @@ def main():
 
     #Bielik
     llm, tokenizer = load_llm()
-    for raw_text_filename in os.listdir(TEMP_RAW):
-        raw_text_file = open(os.path.join(TEMP_RAW, raw_text_filename), "r")
-        raw_text = raw_text_file.read()
-        raw_text_file.close()
-        refined_text = big_think(llm, tokenizer, PROMPT, raw_text, 0.7)
+    dialog_lines = []
 
-        refined_text_filename = os.path.join(TEMP_TXT, raw_text_filename)
-        mode = 'x'
-        if os.path.exists(refined_text_filename):
-            mode = 'w'
+    for raw_text_filename in sorted(os.listdir(TEMP_RAW)):
+        raw_path = os.path.join(TEMP_RAW, raw_text_filename)
+        if not os.path.isfile(raw_path):
+            continue
+        with open(raw_path, "r", encoding="utf-8") as f:
+            text = f.read().strip()
+        if not text:
+            continue
+        dialog_lines.append(f"- {text}")
 
-        refined_text_file = open(refined_text_filename, mode)
-        refined_text_file.write(refined_text)
-        refined_text_file.close()
+    dialog_text = "\n".join(dialog_lines)
+
+    refined_dialog = big_think(llm, tokenizer, PROMPT, dialog_text, 0.7)
+    output_path = os.path.join(TEMP_RAW, "dialog_refined.txt")
+    with open(output_path, "w", encoding="utf-8") as f:
+        f.write(refined_dialog)
+
+
+
+    # Rozbijanie dialog_refined.txt na wypowiedzi
+
+    refined_dialog_path = os.path.join(TEMP_RAW, "dialog_refined.txt")
+    with open(refined_dialog_path, "r", encoding="utf-8") as f:
+        refined_text = f.read()
+
+    utterances = [
+        line[2:].strip()
+        for line in refined_text.splitlines()
+        if line.strip().startswith("- ")
+    ]
+
+    speech_files = sorted(
+        f for f in os.listdir(TEMP_SPEECH)
+        if f.endswith(".wav")
+    )
+
+    if len(utterances) != len(speech_files):
+        raise ValueError(
+            f"Liczba wypowiedzi ({len(utterances)}) "
+            f"nie zgadza się z liczbą plików audio ({len(speech_files)})"
+        )
+
+    for utterance, speech_file in zip(utterances, speech_files):
+        speaker_id = extract_speaker_id(speech_file)
+
+        base_name = os.path.splitext(speech_file)[0]
+        output_txt_path = os.path.join(
+            TEMP_TXT,
+            f"{base_name}.txt"
+        )
+
+        with open(output_txt_path, "w", encoding="utf-8") as f:
+            f.write(utterance)
+
 
 
     #generowanie wypowiedzi z obrobionego tekstu 

@@ -1,0 +1,28 @@
+Jesteś asystentem językowym. Otrzymasz dialog zapisany jako lista wypowiedzi,
+gdzie każda linia zaczyna się od myślnika i zawiera wypowiedź jednego z mówców.
+
+Twoje zadanie:
+- streścić dialog (skrócić go),
+- poprawić język (gramatyka, styl, klarowność),
+- zachować oryginalny sens wypowiedzi,
+- NIE dodawać nowych informacji,
+- NIE usuwać mówców ani zmieniać kolejności wypowiedzi,
+- zachować dokładnie ten sam format:
+  - każda wypowiedź w osobnej linii,
+  - każda linia MUSI zaczynać się od myślnika („- ”).
+
+Zasady:
+- jeśli wypowiedź jest długa, skróć ją do najważniejszego sensu,
+- jeśli wypowiedź jest krótka, możesz ją tylko delikatnie poprawić,
+- nie łącz wypowiedzi różnych mówców,
+- nie dodawaj komentarzy, nagłówków ani wyjaśnień.
+
+Zwróć WYŁĄCZNIE poprawiony dialog w tym samym formacie.
+
+Dialog do przetworzenia:
+- No wiesz, wydaje mi się że ten projekt raczej nie wyjdzie, bo nie mamy ludzi
+- Ale przecież możemy jeszcze kogoś dobrać do zespołu
+
+Oczekiwany wynik:
+- Myślę, że ten projekt się nie uda, bo brakuje nam ludzi
+- Możemy jeszcze dobrać kogoś do zespołu
