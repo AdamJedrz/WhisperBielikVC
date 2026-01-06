@@ -19,7 +19,7 @@ TEMP_AUDIO_CORRECTED = "temp_audio_corrected"
 
 # INPUT_AUDIO = os.path.join(TEMP_AUDIO, "audio.wav")
 # RESULT_AUDIO = os.path.join(TEMP_AUDIO, "result.wav")
-INPUT_AUDIO = os.path.join(TEMP_AUDIO, "dialog3.wav")
+INPUT_AUDIO = os.path.join(TEMP_AUDIO, "dialog4.wav")
 RESULT_AUDIO = os.path.join(TEMP_AUDIO, "out.wav")
 
 def extract_speaker_id(filename: str) -> int:
@@ -58,15 +58,29 @@ def main():
     llm, tokenizer = load_llm()
     dialog_lines = []
 
+    prev_speaker = None
+
     for raw_text_filename in sorted(os.listdir(TEMP_RAW)):
         raw_path = os.path.join(TEMP_RAW, raw_text_filename)
         if not os.path.isfile(raw_path):
             continue
+
+        parts = raw_text_filename.split("_speaker")
+        if len(parts) != 2:
+            continue
+
+        speaker = parts[1].replace(".txt", "")
+        
         with open(raw_path, "r", encoding="utf-8") as f:
             text = f.read().strip()
         if not text:
             continue
-        dialog_lines.append(f"- {text}")
+
+        if speaker == prev_speaker:
+            dialog_lines[-1] += " " + text
+        else:
+            dialog_lines.append(f"- {text}")
+            prev_speaker = speaker
 
     dialog_text = "\n".join(dialog_lines)
 
@@ -74,6 +88,7 @@ def main():
     output_path = os.path.join(TEMP_RAW, "dialog_refined.txt")
     with open(output_path, "w", encoding="utf-8") as f:
         f.write(refined_dialog)
+
 
 
 
@@ -90,33 +105,42 @@ def main():
     ]
 
     speech_files = sorted(
-        f for f in os.listdir(TEMP_SPEECH)
-        if f.endswith(".wav")
+        (f for f in os.listdir(TEMP_SPEECH) if f.endswith(".wav")),
+        key=lambda x: int(re.search(r'speech(\d+)_', x).group(1))
     )
 
-    if len(utterances) != len(speech_files):
-        raise ValueError(
-            f"Liczba wypowiedzi ({len(utterances)}) "
-            f"nie zgadza się z liczbą plików audio ({len(speech_files)})"
-        )
+    if not speech_files:
+        raise ValueError("Brak plików audio w TEMP_SPEECH")
 
-    for utterance, speech_file in zip(utterances, speech_files):
-        speaker_id = extract_speaker_id(speech_file)
+    first_speaker_id = extract_speaker_id(speech_files[0])
+    second_speaker_id = 1 if first_speaker_id != 1 else 2
 
-        base_name = os.path.splitext(speech_file)[0]
-        output_txt_path = os.path.join(
-            TEMP_TXT,
-            f"{base_name}.txt"
-        )
+    speakers = [first_speaker_id, second_speaker_id]
+    speaker_index = 0
+
+    for i, (utterance, speech_file) in enumerate(zip(utterances, speech_files)):
+        speaker_id = speakers[speaker_index]
+        speaker_index = 1 - speaker_index
+
+        if i == 0:
+            base_name = os.path.splitext(speech_file)[0]
+            output_txt_path = os.path.join(TEMP_TXT, f"{base_name}.txt")
+        else:
+            output_txt_path = os.path.join(TEMP_TXT, f"speech{i+1}_speaker{speaker_id}.txt")
 
         with open(output_txt_path, "w", encoding="utf-8") as f:
             f.write(utterance)
+    
+
 
 
 
     #generowanie wypowiedzi z obrobionego tekstu 
     os.makedirs(TEMP_AUDIO_CORRECTED, exist_ok=True)
-    txt_files = sorted(os.listdir(TEMP_TXT))
+    txt_files = sorted(
+        os.listdir(TEMP_TXT),
+        key=lambda x: int(re.search(r'speech(\d+)_', x).group(1))
+    )
     generated_wavs = []
 
     for txt in txt_files:
