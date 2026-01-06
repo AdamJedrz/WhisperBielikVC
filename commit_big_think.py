@@ -3,19 +3,24 @@ from transformers import AutoModelForCausalLM, AutoTokenizer
 import os
 import numpy as np
 
-def load_llm():
-    model_id = 'speakleash/Bielik-11B-v2.6-Instruct'
+from transformers import AutoTokenizer, AutoModelForCausalLM
 
-    tokenizer = AutoTokenizer.from_pretrained(model_id, use_fast=False)
+def load_llm():
+    model_id = "speakleash/Bielik-1.5B-v3"
+
+    tokenizer = AutoTokenizer.from_pretrained(
+        model_id,
+        trust_remote_code=True
+    )
 
     model = AutoModelForCausalLM.from_pretrained(
-            model_id,
-            device_map="auto",
-            # dtype=torch.bfloat16,
-            trust_remote_code=True
-            )
-
+        model_id,
+        device_map="auto",
+        trust_remote_code=True
+    )
+    
     return model, tokenizer
+
 
 def big_think(model, tokenizer, prompt_path, input_text, temperature) -> str:
     prompt_file = open(prompt_path, 'r')

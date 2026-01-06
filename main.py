@@ -19,7 +19,7 @@ TEMP_AUDIO_CORRECTED = "temp_audio_corrected"
 
 # INPUT_AUDIO = os.path.join(TEMP_AUDIO, "audio.wav")
 # RESULT_AUDIO = os.path.join(TEMP_AUDIO, "result.wav")
-INPUT_AUDIO = os.path.join(TEMP_AUDIO, "chair_sawtooth_chirp_1.wav")
+INPUT_AUDIO = os.path.join(TEMP_AUDIO, "dialog3.wav")
 RESULT_AUDIO = os.path.join(TEMP_AUDIO, "out.wav")
 
 def extract_speaker_id(filename: str) -> int:
@@ -30,7 +30,7 @@ def extract_speaker_id(filename: str) -> int:
 
 
 def main():
-
+    
     #pyannote wyodrębnianie
     run_diarization(
         audio_path=INPUT_AUDIO,
@@ -48,9 +48,8 @@ def main():
         if os.path.exists(transcript_filename):
             mode = 'w'
 
-        transcript_file = open(transcript_filename, mode)
-        transcript_file.write(transcript_text)
-        transcript_file.close()
+        with open(transcript_filename, mode, encoding="utf-8") as transcript_file:
+            transcript_file.write(transcript_text)
 
     del stt_model
     torch.cuda.empty_cache()

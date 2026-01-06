@@ -18,11 +18,11 @@ Zasady:
 - nie dodawaj komentarzy, nagłówków ani wyjaśnień.
 
 Zwróć WYŁĄCZNIE poprawiony dialog w tym samym formacie.
-
-Dialog do przetworzenia:
+[EXAMPLE]
+[USER]
 - No wiesz, wydaje mi się że ten projekt raczej nie wyjdzie, bo nie mamy ludzi
 - Ale przecież możemy jeszcze kogoś dobrać do zespołu
 
-Oczekiwany wynik:
+[ASSISTANT]
 - Myślę, że ten projekt się nie uda, bo brakuje nam ludzi
 - Możemy jeszcze dobrać kogoś do zespołu

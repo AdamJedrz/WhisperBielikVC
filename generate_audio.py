@@ -18,10 +18,9 @@ _tts_model = None
 def get_tts():
     global _tts_model
     if _tts_model is None:
-        with torch.serialization.safe_globals(safe_classes):
-            _tts_model = TTS(
-                "tts_models/multilingual/multi-dataset/xtts_v2"
-            ).to("cuda")
+        _tts_model = TTS(
+            "tts_models/multilingual/multi-dataset/xtts_v2"
+        ).to("cuda")
     return _tts_model
 
 

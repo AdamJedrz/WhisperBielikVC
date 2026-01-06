@@ -1,11 +1,6 @@
 import os
 
 import torch
-from torch.serialization import add_safe_globals
-from torch.torch_version import TorchVersion
-from pyannote.audio.core.task import Specifications, Problem, Resolution
-
-add_safe_globals([TorchVersion, Specifications, Problem, Resolution])
 
 from pyannote.audio import Pipeline
 from pydub import AudioSegment
